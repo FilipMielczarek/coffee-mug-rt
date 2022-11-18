@@ -5,4 +5,9 @@ const createProductSchema = Joi.object({
   Price: Joi.number().positive().required(),
 });
 
-module.exports = { createProductSchema };
+const updateProductSchema = Joi.object({
+  Name: Joi.string().min(3).max(100),
+  Price: Joi.number().positive(),
+});
+
+module.exports = { createProductSchema, updateProductSchema };
