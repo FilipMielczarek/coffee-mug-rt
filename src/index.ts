@@ -1,13 +1,16 @@
 import express, { Request, Response } from 'express';
+import productsRoutes from './routes/products';
 
 const app = express();
+const PORT = 5001;
+
+app.use(express.json());
+app.use('/products', productsRoutes);
 
 app.get('/', (req: Request, res: Response) => {
-  const age: number = 40;
-
-  res.json({ message: `The age is ${age}` });
+  res.send('Hello from homepage');
 });
 
-app.listen('3001', (): void => {
-  console.log('Server running');
+app.listen(PORT, () => {
+  console.log(`Server running on port: http://localhost:${PORT}`);
 });
