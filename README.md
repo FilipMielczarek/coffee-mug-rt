@@ -4,7 +4,7 @@ CRUD API for managing products
 
 ## Installation
 
-Clone repository and download dependencies using yarn or npm, and run development server
+Clone repository and download dependencies using yarn or npm, and run development server. For API testing please use Postman.
 
 ```bash
   yarn
