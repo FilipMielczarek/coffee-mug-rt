@@ -33,8 +33,6 @@ Clone repository and download dependencies using yarn or npm, and run developmen
         "Id": "83839706-32dc-4cba-a61b-ac999349cb3f"
     }
 
-]
-
 ## Create a new product
 
 ### Request
