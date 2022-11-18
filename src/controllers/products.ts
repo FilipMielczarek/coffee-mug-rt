@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
-import { readFileSync, writeFileSync } from 'fs';
+import { writeFileSync } from 'fs';
+import { readDataFromJSONFile } from '../helpers/ReadDataFromJsonFile';
 
 const {
   createProductSchema,
@@ -87,10 +88,4 @@ export const updateProduct = async (req: Request, res: Response) => {
   } catch (e) {
     res.send(e);
   }
-};
-
-const readDataFromJSONFile = (): Product[] => {
-  const data = readFileSync('./src/products.json');
-  const response = JSON.parse(data.toString());
-  return response;
 };
