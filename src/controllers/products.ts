@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { writeFileSync } from 'fs';
-import { readDataFromJSONFile } from '../helpers/ReadDataFromJsonFile';
+import { readDataFromJSONFile } from '../helpers/readDataFromJsonFile';
+import path from 'path';
 
 const {
   createProductSchema,
@@ -15,61 +16,51 @@ type Product = {
   UpdateDate?: Date;
 };
 
-export const getProducts = (req: Request, res: Response) => {
-  const products = readDataFromJSONFile();
+const dbFile = path.join(__dirname, '..', '..', 'mock_db', 'products.json');
 
-  res.send(products);
+export const getProducts = (req: Request, res: Response) => {
+  try {
+    const products = readDataFromJSONFile();
+    res.status(200).send(products);
+  } catch {
+    res.status(404).send(`Products database doesn't exist`);
+  }
 };
 
 export const createProduct = async (req: Request, res: Response) => {
   try {
     const product = await createProductSchema.validateAsync(req.body);
-
     let products = readDataFromJSONFile();
 
     products.push({ ...product, Id: uuidv4() });
-
     const productsParsed = JSON.stringify(products);
+    writeFileSync(dbFile, productsParsed);
 
-    writeFileSync('./src/products.json', productsParsed);
-
-    res.send(`Product with the name ${product.Name} added to the database`);
+    res
+      .status(200)
+      .send(`Product with the name ${product.Name} added to the database`);
   } catch (e) {
-    res.send(e);
+    res.status(406).send(e);
   }
 };
 
 export const getProduct = (req: Request, res: Response) => {
+  const { id } = req.params;
+
   const products = readDataFromJSONFile();
-
-  const { id } = req.params;
-  const foundProduct = products.find((product: Product) => product.Id === id);
-
-  foundProduct
-    ? res.send(foundProduct)
-    : res.send(`Product with id: ${id} doesn't exist`);
-};
-
-export const deleteProduct = (req: Request, res: Response) => {
-  let products = readDataFromJSONFile();
-
-  const { id } = req.params;
-
   const foundProduct = products.find((product: Product) => product.Id === id);
 
   if (foundProduct) {
-    products = products.filter((product) => product.Id !== id);
-    const productsParsed = JSON.stringify(products);
-    writeFileSync('./src/products.json', productsParsed);
-    res.send(`Product with the id: ${id} deleted`);
+    res.status(200).send(foundProduct);
   } else {
-    res.send(`Product with the id: ${id} doesn't exist`);
+    res.status(404).send(`Product with id: ${id} doesn't exist`);
   }
 };
 
 export const updateProduct = async (req: Request, res: Response) => {
+  const { id } = req.params;
+
   try {
-    const { id } = req.params;
     let products = readDataFromJSONFile();
     const validatedProduct = await updateProductSchema.validateAsync(req.body);
 
@@ -78,14 +69,32 @@ export const updateProduct = async (req: Request, res: Response) => {
         if (validatedProduct.Name) product.Name = validatedProduct.Name;
         if (validatedProduct.Price) product.Price = validatedProduct.Price;
         product.UpdateDate = new Date();
+
         products[index] = product;
         const productsParsed = JSON.stringify(products);
-        writeFileSync('./src/products.json', productsParsed);
-        res.send(`Product with the id ${id} has been updated`);
+        writeFileSync(dbFile, productsParsed);
+        res.status(200).send(`Product with the id ${id} has been updated`);
       }
     });
-    res.send(`Product with the id ${id} doesn't exits`);
+    res.status(404).send(`Product with the id ${id} doesn't exits`);
   } catch (e) {
-    res.send(e);
+    res.status(400).send(e);
+  }
+};
+
+export const deleteProduct = (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  let products = readDataFromJSONFile();
+  const foundProduct = products.find((product: Product) => product.Id === id);
+
+  if (foundProduct) {
+    products = products.filter((product) => product.Id !== id);
+
+    const productsParsed = JSON.stringify(products);
+    writeFileSync(dbFile, productsParsed);
+    res.status(200).send(`Product with the id: ${id} deleted`);
+  } else {
+    res.status(404).send(`Product with the id: ${id} doesn't exist`);
   }
 };
